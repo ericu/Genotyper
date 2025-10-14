@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from collections import defaultdict
+
 inputA = 'AABb'
 inputB = 'aabB'
 
@@ -42,4 +44,13 @@ def sortGenesDominantFirst(c):
     return a0 + a1 + sortGenesDominantFirst(tail)
   return a1 + a0 + sortGenesDominantFirst(tail)
   
-print([sortGenesDominantFirst(c) for c in offspring])
+sorted = [sortGenesDominantFirst(c) for c in offspring]
+print(sorted)
+
+def histogram(items):
+  h = defaultdict(int)
+  for item in items:
+    h[item] += 1
+  return h
+
+print(histogram(sorted))
