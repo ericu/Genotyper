@@ -54,3 +54,17 @@ def histogram(items):
   return h
 
 print(histogram(sorted))
+
+def phenotypeFromGenotype(c):
+  if len(c) < 0 or len(c) % 2 != 0:
+    raise 'Invalid chromosome length.'
+  if len(c) == 0:
+    return ''
+  a0, a1, tail = c[0], c[1], c[2:]
+  if (a0.isupper()):
+    return a0 + phenotypeFromGenotype(tail)
+  return a1 + phenotypeFromGenotype(tail)
+
+phenotypes = [phenotypeFromGenotype(g) for g in offspring]
+print('phenotypes', phenotypes)
+print(histogram(phenotypes))
