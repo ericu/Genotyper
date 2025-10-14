@@ -4,104 +4,131 @@ from collections import defaultdict
 import argparse
 import sys
 
+
 def gameteSetsFromChromosome(c):
-  if len(c) < 0 or len(c) % 2 != 0:
-    raise Exception("Invalid chromosome length.")
-  if len(c) == 0:
-    return [""]
-  a0, a1, tail = c[0], c[1], c[2:]
-  if a0.upper() != a1.upper():
-    raise Exception("Unsupported allele pairing (%s vs %s)" % (a0, a1))
-  tails = gameteSetsFromChromosome(tail)
-  return [a0+tail for tail in tails] + [a1+tail for tail in tails]
+    if len(c) < 0 or len(c) % 2 != 0:
+        raise Exception("Invalid chromosome length.")
+    if len(c) == 0:
+        return [""]
+    a0, a1, tail = c[0], c[1], c[2:]
+    if a0.upper() != a1.upper():
+        raise Exception("Unsupported allele pairing (%s vs %s)" % (a0, a1))
+    tails = gameteSetsFromChromosome(tail)
+    return [a0 + tail for tail in tails] + [a1 + tail for tail in tails]
+
 
 def zygoteFromGametes(g0, g1):
-  if len(g0) != len(g1):
-    raise Exception("Mismatched chromosome lengths.")
-  if len(g0) <= 0:
-    return ""
-  a0, g0Tail = g0[0], g0[1:]
-  a1, g1Tail = g1[0], g1[1:]
-  return a0 + a1 + zygoteFromGametes(g0Tail, g1Tail)
+    if len(g0) != len(g1):
+        raise Exception("Mismatched chromosome lengths.")
+    if len(g0) <= 0:
+        return ""
+    a0, g0Tail = g0[0], g0[1:]
+    a1, g1Tail = g1[0], g1[1:]
+    return a0 + a1 + zygoteFromGametes(g0Tail, g1Tail)
+
 
 def crossGameteSets(s0, s1):
-  return [zygoteFromGametes(g0, g1) for g1 in s1 for g0 in s0]
+    return [zygoteFromGametes(g0, g1) for g1 in s1 for g0 in s0]
+
 
 def sortGenesDominantFirst(c):
-  if len(c) < 0 or len(c) % 2 != 0:
-    raise Exception("Invalid chromosome length.")
-  if len(c) == 0:
-    return ""
+    if len(c) < 0 or len(c) % 2 != 0:
+        raise Exception("Invalid chromosome length.")
+    if len(c) == 0:
+        return ""
 
-  a0, a1, tail = c[0], c[1], c[2:]
-  if (a0.isupper()):
-    return a0 + a1 + sortGenesDominantFirst(tail)
-  return a1 + a0 + sortGenesDominantFirst(tail)
-  
+    a0, a1, tail = c[0], c[1], c[2:]
+    if a0.isupper():
+        return a0 + a1 + sortGenesDominantFirst(tail)
+    return a1 + a0 + sortGenesDominantFirst(tail)
+
+
 def histogram(items):
-  h = defaultdict(int)
-  for item in items:
-    h[item] += 1
-  return h
+    h = defaultdict(int)
+    for item in items:
+        h[item] += 1
+    return h
+
 
 def phenotypeFromGenotype(c):
-  if len(c) < 0 or len(c) % 2 != 0:
-    raise Exception("Invalid chromosome length.")
-  if len(c) == 0:
-    return ""
-  a0, a1, tail = c[0], c[1], c[2:]
-  if (a0.isupper()):
-    return a0 + phenotypeFromGenotype(tail)
-  return a1 + phenotypeFromGenotype(tail)
+    if len(c) < 0 or len(c) % 2 != 0:
+        raise Exception("Invalid chromosome length.")
+    if len(c) == 0:
+        return ""
+    a0, a1, tail = c[0], c[1], c[2:]
+    if a0.isupper():
+        return a0 + phenotypeFromGenotype(tail)
+    return a1 + phenotypeFromGenotype(tail)
+
 
 def _get_args():
     name = sys.argv[0]
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "c0", help="input chromosome",
+        "c0",
+        help="input chromosome",
     )
-    parser.add_argument(
-        "c1", nargs="?", help="second input chromosome"
-    )
+    parser.add_argument("c1", nargs="?", help="second input chromosome")
     args, argv = parser.parse_known_args()
     if len(argv) > 0:
-      parser.print_help()
-      sys.exit(-1)
+        parser.print_help()
+        sys.exit(-1)
     sys.argv[:] = [name] + argv
     return args
 
+
 def computeCross(c0, c1):
-  gametes0 = gameteSetsFromChromosome(c0)
-  gametes1 = gameteSetsFromChromosome(c1)
-  offspring = crossGameteSets(gametes0, gametes1)
-  sortedChromosome = [sortGenesDominantFirst(c) for c in offspring]
-  phenotypes = [phenotypeFromGenotype(g) for g in offspring]
-  return {
-    "gametes0": gametes0,
-    "gametes1": gametes1,
-    "genotypes": sortedChromosome,
-    "phenotypes": phenotypes,
-    "genotypeHistogram": histogram(sortedChromosome),
-    "phenotypeHistogram": histogram(phenotypes),
-  }
+    gametes0 = gameteSetsFromChromosome(c0)
+    gametes1 = gameteSetsFromChromosome(c1)
+    offspring = crossGameteSets(gametes0, gametes1)
+    sortedChromosome = [sortGenesDominantFirst(c) for c in offspring]
+    phenotypes = [phenotypeFromGenotype(g) for g in offspring]
+    return {
+        "gametes0": gametes0,
+        "gametes1": gametes1,
+        "genotypes": sortedChromosome,
+        "phenotypes": phenotypes,
+        "genotypeHistogram": histogram(sortedChromosome),
+        "phenotypeHistogram": histogram(phenotypes),
+    }
+
 
 def main():
-  args = _get_args()
-  c0 = args.c0
-  c1 = args.c1
-  if c1:
-    results = computeCross(c0, c1)
-    print('Input chromosomes: %s, %s' % (c0, c1))
-    print('Potential gametes for %s: %s' % (c0, ", ".join(results['gametes0'])))
-    print('Potential gametes for %s: %s' % (c1, ", ".join(results['gametes1'])))
-    print('Child genotype distribution: %s' %
-          ", ".join(["%s: %s" % (k, v)
-                     for (k, v) in results['genotypeHistogram'].items()]))
-    print('Child phenotype distribution: %s' %
-          ", ".join(["%s: %s" % (k, v)
-                     for (k, v) in results['phenotypeHistogram'].items()]))
-  else:
-    print('Potential gametes for ', c0, ': ', gameteSetsFromChromosome(c0))
+    args = _get_args()
+    c0 = args.c0
+    c1 = args.c1
+    if c1:
+        results = computeCross(c0, c1)
+        print("Input chromosomes: %s, %s" % (c0, c1))
+        print(
+            "Potential gametes for %s: %s"
+            % (c0, ", ".join(results["gametes0"]))
+        )
+        print(
+            "Potential gametes for %s: %s"
+            % (c1, ", ".join(results["gametes1"]))
+        )
+        print(
+            "Child genotype distribution: %s"
+            % ", ".join(
+                [
+                    "%s: %s" % (k, v)
+                    for (k, v) in results["genotypeHistogram"].items()
+                ]
+            )
+        )
+        print(
+            "Child phenotype distribution: %s"
+            % ", ".join(
+                [
+                    "%s: %s" % (k, v)
+                    for (k, v) in results["phenotypeHistogram"].items()
+                ]
+            )
+        )
+    else:
+        print("Potential gametes for ", c0, ": ", gameteSetsFromChromosome(c0))
+
 
 if __name__ == "__main__":
     main()
