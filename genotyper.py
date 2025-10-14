@@ -6,16 +6,18 @@ import sys
 
 def gameteSetsFromChromosome(c):
   if len(c) < 0 or len(c) % 2 != 0:
-    raise "Invalid chromosome length."
+    raise Exception("Invalid chromosome length.")
   if len(c) == 0:
     return [""]
   a0, a1, tail = c[0], c[1], c[2:]
+  if a0.upper() != a1.upper():
+    raise Exception("Unsupported allele pairing (%s vs %s)" % (a0, a1))
   tails = gameteSetsFromChromosome(tail)
   return [a0+tail for tail in tails] + [a1+tail for tail in tails]
 
 def zygoteFromGametes(g0, g1):
   if len(g0) != len(g1):
-    raise "Mismatched chromosome lengths."
+    raise Exception("Mismatched chromosome lengths.")
   if len(g0) <= 0:
     return ""
   a0, g0Tail = g0[0], g0[1:]
@@ -27,7 +29,7 @@ def crossGameteSets(s0, s1):
 
 def sortGenesDominantFirst(c):
   if len(c) < 0 or len(c) % 2 != 0:
-    raise "Invalid chromosome length."
+    raise Exception("Invalid chromosome length.")
   if len(c) == 0:
     return ""
 
@@ -44,7 +46,7 @@ def histogram(items):
 
 def phenotypeFromGenotype(c):
   if len(c) < 0 or len(c) % 2 != 0:
-    raise "Invalid chromosome length."
+    raise Exception("Invalid chromosome length.")
   if len(c) == 0:
     return ""
   a0, a1, tail = c[0], c[1], c[2:]
@@ -85,11 +87,21 @@ def computeCross(c0, c1):
 
 def main():
   args = _get_args()
-  if args.c1:
-    results = computeCross(args.c0, args.c1)
-    print(results)
+  c0 = args.c0
+  c1 = args.c1
+  if c1:
+    results = computeCross(c0, c1)
+    print('Input chromosomes: %s, %s' % (c0, c1))
+    print('Potential gametes for %s: %s' % (c0, ", ".join(results['gametes0'])))
+    print('Potential gametes for %s: %s' % (c1, ", ".join(results['gametes1'])))
+    print('Child genotype distribution: %s' %
+          ", ".join(["%s: %s" % (k, v)
+                     for (k, v) in results['genotypeHistogram'].items()]))
+    print('Child phenotype distribution: %s' %
+          ", ".join(["%s: %s" % (k, v)
+                     for (k, v) in results['phenotypeHistogram'].items()]))
   else:
-    print('Potential gametes for ', args.c0, ': ', gameteSetsFromChromosome(args.c0))
+    print('Potential gametes for ', c0, ': ', gameteSetsFromChromosome(c0))
 
 if __name__ == "__main__":
     main()
