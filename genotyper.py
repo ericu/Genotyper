@@ -2,22 +2,13 @@
 
 input = 'AABb'
 
-characters = [c for c in input]
-firsts = characters[0::2]
-seconds = characters[1::2]
-
-options = [x for x in zip(firsts, seconds)]
-print('input', options)
-def handle(options):
-  if len(options) < 1:
-    raise 'ouch'
-  (h0, h1) = options[0]
-  if len(options) > 1:
-    tail = options[1:]
-    children = handle(tail)
-    print('children', children)
-    return [h0+child for child in children] + [h1+child for child in children]
-  else:
-    return [h0, h1]
-print(handle(options))
-
+def gametesFromChromosomes(c):
+  print('c', c)
+  if len(c) < 0 or len(c) % 2 != 0:
+    raise 'Invalid chromosome length.'
+  if len(c) == 0:
+    return ['']
+  a0, a1, rest = c[0], c[1], c[2:]
+  tails = gametesFromChromosomes(rest)
+  return [a0+tail for tail in tails] + [a1+tail for tail in tails]
+print(gametesFromChromosomes(input))
