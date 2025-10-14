@@ -50,6 +50,10 @@ def histogram(items):
     return h
 
 
+def uniq(items):
+    return [i for i in histogram(items)]
+
+
 def phenotypeFromGenotype(c):
     if len(c) < 0 or len(c) % 2 != 0:
         raise Exception("Invalid chromosome length.")
@@ -102,11 +106,11 @@ def main():
         print("Input chromosomes: %s, %s" % (c0, c1))
         print(
             "Potential gametes for %s: %s"
-            % (c0, ", ".join(results["gametes0"]))
+            % (c0, ", ".join(uniq(results["gametes0"])))
         )
         print(
             "Potential gametes for %s: %s"
-            % (c1, ", ".join(results["gametes1"]))
+            % (c1, ", ".join(uniq(results["gametes1"])))
         )
         print(
             "Child genotype distribution: %s"
@@ -127,7 +131,12 @@ def main():
             )
         )
     else:
-        print("Potential gametes for ", c0, ": ", gameteSetsFromChromosome(c0))
+        print(
+            "Potential gametes for ",
+            c0,
+            ": ",
+            uniq(gameteSetsFromChromosome(c0)),
+        )
 
 
 if __name__ == "__main__":
