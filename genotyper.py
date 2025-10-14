@@ -55,12 +55,6 @@ def phenotypeFromGenotype(c):
 def _get_args():
     name = sys.argv[0]
     parser = argparse.ArgumentParser()
-#    parser.add_argument(
-#        "-u", "--unittest", help="run unit tests", action="store_true"
-#    )
-    parser.add_argument(
-        "-t", "--test", help="run current test", action="store_true"
-    )
     parser.add_argument(
         "c0", help="input chromosome",
     )
@@ -71,32 +65,31 @@ def _get_args():
     if len(argv) > 0:
       parser.print_help()
       sys.exit(-1)
-    print(args, argv)
     sys.argv[:] = [name] + argv
     return args
 
-def runTest():
-  inputA = "AABb"
-  inputB = "aabB"
-
-  print("input", inputA, inputB)
-  print(gameteSetsFromChromosome(inputA))
-  print(gameteSetsFromChromosome(inputB))
-  offspring = crossGameteSets(
-    gameteSetsFromChromosome(inputA), gameteSetsFromChromosome(inputB))
-  sorted = [sortGenesDominantFirst(c) for c in offspring]
-  print(sorted)
-
-  print(histogram(sorted))
+def computeCross(c0, c1):
+  gametes0 = gameteSetsFromChromosome(c0)
+  gametes1 = gameteSetsFromChromosome(c1)
+  offspring = crossGameteSets(gametes0, gametes1)
+  sortedChromosome = [sortGenesDominantFirst(c) for c in offspring]
   phenotypes = [phenotypeFromGenotype(g) for g in offspring]
-  print("phenotypes", phenotypes)
-  print(histogram(phenotypes))
+  return {
+    "gametes0": gametes0,
+    "gametes1": gametes1,
+    "genotypes": sortedChromosome,
+    "phenotypes": phenotypes,
+    "genotypeHistogram": histogram(sortedChromosome),
+    "phenotypeHistogram": histogram(phenotypes),
+  }
 
 def main():
   args = _get_args()
-  print(args)
-  if args.test:
-    runTest()
+  if args.c1:
+    results = computeCross(args.c0, args.c1)
+    print(results)
+  else:
+    print('Potential gametes for ', args.c0, ': ', gameteSetsFromChromosome(args.c0))
 
 if __name__ == "__main__":
     main()
