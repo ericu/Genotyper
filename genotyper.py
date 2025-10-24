@@ -11,7 +11,8 @@ def gameteSetsFromChromosome(c):
     if len(c) == 0:
         return [""]
     a0, a1, tail = c[0], c[1], c[2:]
-    if a0.upper() != a1.upper():
+    # Allow pairing an x-linked allele with a Y
+    if a0.upper() != a1.upper() and a0.upper() != 'Y' and a1.upper() != 'Y':
         raise Exception("Unsupported allele pairing (%s vs %s)" % (a0, a1))
     tails = gameteSetsFromChromosome(tail)
     return [a0 + tail for tail in tails] + [a1 + tail for tail in tails]
@@ -135,7 +136,7 @@ def main():
             "Potential gametes for ",
             c0,
             ": ",
-            uniq(gameteSetsFromChromosome(c0)),
+            ", ".join(uniq(gameteSetsFromChromosome(c0))),
         )
 
 
