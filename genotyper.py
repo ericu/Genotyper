@@ -31,6 +31,22 @@ def zygoteFromGametes(g0, g1):
 def crossGameteSets(s0, s1):
     return [zygoteFromGametes(g0, g1) for g1 in s1 for g0 in s0]
 
+def punnetSquare(s0, s1):
+    gameteLength = len(s0[0])
+    chromosomeLength = 2 * gameteLength
+    smallSpacer = ' ' * gameteLength
+    longSpacer = ' ' * chromosomeLength
+
+    s = ''
+    for s0g in s0:
+      s += longSpacer + s0g
+    s += '\n'
+    for s1g in s1:
+      s += s1g + smallSpacer
+      for s0g in s0:
+        s += zygoteFromGametes(s0g, s1g) + smallSpacer
+      s += '\n'
+    return s
 
 def sortGenesDominantFirst(c):
     if len(c) < 0 or len(c) % 2 != 0:
@@ -95,6 +111,7 @@ def computeCross(c0, c1):
         "phenotypes": phenotypes,
         "genotypeHistogram": histogram(sortedChromosome),
         "phenotypeHistogram": histogram(phenotypes),
+        "punnetSquare": punnetSquare(gametes0, gametes1)
     }
 
 
@@ -131,6 +148,8 @@ def main():
                 ]
             )
         )
+        print("Punnet square:")
+        print(results["punnetSquare"])
     else:
         print(
             "Potential gametes for ",
